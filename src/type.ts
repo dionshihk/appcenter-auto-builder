@@ -45,7 +45,7 @@ export type InnerEnvironmentVariableForDeploymentKeyItem = {type: "deployment-ke
 export type InnerEnvironmentVariableForAppSecret = {type: "app-secret"};
 
 export interface BuildConfiguration {
-    trigger: "continous" | "manual";
+    trigger: "continuous" | "manual";
     artifactVersioning: {buildNumberFormat: "buildId" | "timestamp"};
     environmentVariables: Array<{
         name: string;
