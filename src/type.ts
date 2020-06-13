@@ -25,9 +25,14 @@ export interface InitConfiguration {
     /**
      * If none, only error & warning will be printed to console.
      * If verbose, all information including every step execution will be printed to console.
-     * Default: verbose
+     * Default: "verbose"
      */
     logLevel?: "none" | "verbose";
+    /**
+     * Unit: second
+     * Default: 650 for iOS, 400 for Android
+     */
+    buildEstDuration?: number;
     /**
      * There is no mechanism to recover, all you can do here is to log the error, notify the developer, or etc.
      */

@@ -108,17 +108,21 @@ export class AppBuilder {
     private async triggerBuildAndWait() {
         this.log("triggering build");
 
-        const {name, os} = this.config.project;
-        const {branch = "master"} = this.config.repo;
-
-        const {buildId, buildURL} = await APIService.triggerAppBuild(name, branch);
-        this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
-        await Utility.delay(os === "iOS" ? 650 : 400);
-
+        const {
+            project: {name, os},
+            repo: {branch = "master"},
+            buildEstDuration,
+        } = this.config;
         let buildSuccess = false;
+
+        const {id: buildId} = await APIService.triggerBuild(name, branch);
+        const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${buildId}`;
+        this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
+        await Utility.delay(buildEstDuration || (os === "iOS" ? 650 : 400));
+
         while (true) {
             try {
-                const response = await APIService.checkBuildStatus(name, buildId);
+                const response = await APIService.getBuildStatus(name, buildId);
                 this.log(`build status polled, status: ${response.status}, result: ${response.result || "<N/A>"}`);
                 if (response.status === "completed") {
                     if (response.result === "succeeded") {

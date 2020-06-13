@@ -56,19 +56,6 @@ export class APIService {
         }
     }
 
-    static async getDeploymentKey(appName: string, deploymentName: string): Promise<string> {
-        const ownerName = APIClient.ownerName();
-        const deployments: CreateDeploymentKeyResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
-        const matchedDeployment = deployments.find(_ => _.name === deploymentName);
-        if (matchedDeployment) {
-            return matchedDeployment.key;
-        } else {
-            // Create a new one if not exist
-            const response: CreateDeploymentKeyResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
-            return response.key;
-        }
-    }
-
     static async getRepoConfiguration(appName: string): Promise<GetRepositoryConfigurationRequest> {
         const ownerName = APIClient.ownerName();
         return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/repo_config", {ownerName, appName});
@@ -101,19 +88,27 @@ export class APIService {
         }
     }
 
-    static async checkBuildStatus(appName: string, buildId: number): Promise<GetBuildStatusResponse> {
+    static async getBuildStatus(appName: string, buildId: number): Promise<GetBuildStatusResponse> {
         const ownerName = APIClient.ownerName();
         return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/builds/:buildId", {appName, ownerName, buildId});
     }
 
-    static async triggerAppBuild(appName: string, branch: string): Promise<{buildId: number; buildURL: string}> {
+    static async triggerBuild(appName: string, branch: string): Promise<TriggerBuildResponse> {
         const ownerName = APIClient.ownerName();
-        const response: TriggerBuildResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch});
+        return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch});
+    }
 
-        return {
-            buildId: response.id,
-            buildURL: `https://appcenter.ms/users/${ownerName}/apps/${appName}/build/branches/${branch}/builds/${response.id}`,
-        };
+    static async getDeploymentKey(appName: string, deploymentName: string): Promise<string> {
+        const ownerName = APIClient.ownerName();
+        const deployments: CreateDeploymentKeyResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
+        const matchedDeployment = deployments.find(_ => _.name === deploymentName);
+        if (matchedDeployment) {
+            return matchedDeployment.key;
+        } else {
+            // Create a new one if not exist
+            const response: CreateDeploymentKeyResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
+            return response.key;
+        }
     }
 
     static async disconnectRepo(appName: string): Promise<void> {
