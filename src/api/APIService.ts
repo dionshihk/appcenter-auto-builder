@@ -53,7 +53,7 @@ export class APIService {
         const ownerName = APIClient.ownerName();
         let config;
         try {
-            config = await AppCenterAPIService.getBuildConfiguration(appName, branch);
+            config = await APIService.getBuildConfiguration(appName, branch);
         } catch (e) {
             console.info(`[${appName}] build configuration not found or unidentified error occurred, ignore and proceed`);
         }
@@ -84,7 +84,7 @@ export class APIService {
         return response;
     }
 
-    static async triggerAppBuild(appName: string, branch: "master" | "release"): Promise<{buildId: number; buildURL: string}> {
+    static async triggerAppBuild(appName: string, branch: string): Promise<{buildId: number; buildURL: string}> {
         const ownerName = APIClient.ownerName();
         const response: TriggerBuildResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch}, null);
 

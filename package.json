@@ -7,8 +7,10 @@
     "author": "Dion Shi",
     "license": "MIT",
     "scripts": {
+        "ts-node": "TS_NODE_PROJECT=./tsconfig.json ./node_modules/.bin/ts-node",
         "build": "node script/build.js",
-        "format": "prettier --config ./prettier.json --write \"{src,config,script}/**/*.{ts,js,json}\""
+        "format": "prettier --config ./prettier.config.js --write \"{src,script,test}/**/*.{ts,js,json}\"",
+        "test": "yarn ts-node ./test/index.ts"
     },
     "devDependencies": {
         "@types/node": "14.0.13",

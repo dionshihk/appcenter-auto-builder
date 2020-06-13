@@ -3,22 +3,6 @@ import Utility from "./util/Utility";
 import {RetryWhenError} from "./util/RetryWhenError";
 import {InitConfiguration} from "./type";
 
-/**
- * Usage:
- * yarn ts-node <merchant>/build.ts demo-game-ios
- */
-interface Config {
-    envName: string;
-    displayName: string;
-    staticBucketName: string;
-    isDev?: boolean;
-    iosConfig?: {
-        gameProvisionalProfilePath: string;
-        portalProvisionalProfilePath: string;
-        iosCertificatePath: string;
-    };
-}
-
 export class AppBuilder {
     constructor(private readonly config: InitConfiguration) {}
 
@@ -33,14 +17,16 @@ export class AppBuilder {
     @RetryWhenError()
     private async createProject() {
         this.log("checking if project exists ...");
+
         const {name, platform, os} = this.config.project;
         const appExist = await APIService.checkAppExist(name);
+
         if (appExist) {
             this.log("project exists, proceed", true);
         } else {
             this.log("project not exists, creating one ...");
             await APIService.createProject({display_name: name, name, os, platform});
-            console.info(`project created`, true);
+            this.log(`project created`, true);
         }
     }
 
@@ -48,6 +34,7 @@ export class AppBuilder {
     private async connectRepo() {
         const {name} = this.config.project;
         const {url} = this.config.repo;
+
         this.log("connecting to repo");
         await APIService.setRepositoryConfiguration(name, {repo_url: url});
         this.log("repo connected: " + url, true);
@@ -60,20 +47,22 @@ export class AppBuilder {
         const {name} = this.config.project;
         const {branch = "master"} = this.config.repo;
         const {buildSetting} = this.config;
-        if (buildSetting.innerEnvironmentVariables) {
-            const deploymentKey = await APIService.getDeploymentKey(name);
-            const appSecret = await APIService.getAppSecret(name);
 
-            buildSetting.innerEnvironmentVariables.forEach(({name, value}) => {
-                switch (value) {
-                    case "<appSecretKey>":
-                        buildSetting.environmentVariables[name] = appSecret;
-                        break;
-                    case "<deploymentKey>":
-                        buildSetting.environmentVariables[name] = deploymentKey;
-                        break;
-                }
-            });
+        if (buildSetting.innerEnvironmentVariables) {
+            const deploymentKeyItem = buildSetting.innerEnvironmentVariables.find(_ => _.value === "<deploymentKey>");
+            if (deploymentKeyItem) {
+                const deploymentKey = await APIService.getDeploymentKey(name);
+                this.log(`deployment key fetched, added into env variable as [${deploymentKeyItem.name}]`);
+                buildSetting.environmentVariables[deploymentKeyItem.name] = deploymentKey;
+            }
+
+            const appSecretItem = buildSetting.innerEnvironmentVariables.find(_ => _.value === "<appSecretKey>");
+            if (appSecretItem) {
+                const appSecret = await APIService.getAppSecret(name);
+                this.log(`app secret fetched, added into env variable as [${appSecretItem.name}]`);
+                buildSetting.environmentVariables[appSecretItem.name] = appSecret;
+            }
+
             delete buildSetting.innerEnvironmentVariables;
         }
 
@@ -81,29 +70,39 @@ export class AppBuilder {
         this.log(`build configuration set`, true);
     }
 
-    private async triggerBuildAndWait(): Promise<void> {
-        // console.info(`\n[${this.projectName}] triggering build process ...`);
-        // const {buildId, buildURL} = await APIService.triggerAppBuild(this.projectName, this.config.isDev ? "master" : "release");
-        // console.info(`[${this.projectName}] build process triggered, waiting for status change, build ID: ${buildId}`);
-        // console.info(`[${this.projectName}] build URL: ${buildURL}`);
-        // await Utility.delay(this.projectName.endsWith("ios") ? 650 : 400);
-        //
-        // while (true) {
-        //     try {
-        //         const response = await APIService.checkBuildStatus(this.projectName, buildId);
-        //         console.info(`[${this.projectName}] build status polled, status: ${response.status}, result: ${response.result || "<N/A>"}`);
-        //         if (response.status === "completed") {
-        //             console.info(`[${this.projectName}] build status updated: \n${JSON.stringify(response)}`);
-        //             return response.result === "succeeded";
-        //         } else {
-        //             await Utility.delay(20);
-        //         }
-        //     } catch (e) {
-        //         console.info(`[${this.projectName}] build status polling failed, retry in 10 seconds`);
-        //         console.error(e);
-        //         await Utility.delay(10);
-        //     }
-        // }
+    private async triggerBuildAndWait() {
+        this.log("triggering build");
+
+        const {name, os} = this.config.project;
+        const {branch = "master"} = this.config.repo;
+
+        const {buildId, buildURL} = await APIService.triggerAppBuild(name, branch);
+        this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
+        await Utility.delay(os === "iOS" ? 650 : 400);
+
+        let buildSuccess = false;
+        while (true) {
+            try {
+                const response = await APIService.checkBuildStatus(name, buildId);
+                this.log(`build status polled, status: ${response.status}, result: ${response.result || "<N/A>"}`);
+                if (response.status === "completed") {
+                    if (response.result === "succeeded") {
+                        buildSuccess = true;
+                    }
+                    break;
+                } else {
+                    await Utility.delay(20);
+                }
+            } catch (e) {
+                console.warn("[pollingBuildStatus] failed, retry in 10 seconds, error:");
+                console.warn(e);
+                await Utility.delay(10);
+            }
+        }
+
+        if (!buildSuccess) {
+            throw new Error("AppCenter Build not success, please visit AppCenter for details");
+        }
     }
 
     @RetryWhenError()
