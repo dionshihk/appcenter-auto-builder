@@ -1,19 +1,18 @@
 {
     "compilerOptions": {
         "outDir": "./build/out",
-        "module": "esnext",
+        "module": "commonjs",
         "target": "es5",
         "moduleResolution": "node",
         "declaration": true,
         "strict": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
-        "jsx": "react",
         "lib": ["es2017"],
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
         "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true
     },
-    "include": ["./src"]
+    "include": ["./src", "./test"]
 }

@@ -7,15 +7,30 @@ export interface InitConfiguration {
     };
     repo: {
         url: string;
-        branch?: string; // Default: master
+        /**
+         * Default: "master"
+         */
+        branch?: string;
     };
     owner: {
         type: "individual" | "organization";
         name: string;
     };
     buildSetting: AppBuildConfiguration;
-    disconnectRepoOnFinish?: boolean; // Default: false
-    logLevel?: "none" | "verbose"; // Default: verbose
+    /**
+     * Default: false
+     */
+    disconnectRepoOnFinish?: boolean;
+    /**
+     * If none, only error & warning will be printed to console.
+     * If verbose, all information including every step execution will be printed to console.
+     * Default: verbose
+     */
+    logLevel?: "none" | "verbose";
+    /**
+     * There is no mechanism to recover, all you can do here is to log the error, notify the developer, or etc.
+     */
+    onError?: (error: any) => void;
 }
 
 export type ProjectOS = "iOS" | "Android";

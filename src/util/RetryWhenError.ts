@@ -1,6 +1,6 @@
 import Utility from "./Utility";
 
-export function RetryWhenError(maxRetryTimes: number = 2, interval: number = 10) {
+export function RetryWhenError(maxRetryTimes: number = 2, interval: number = 3) {
     let retryTimes = 0;
     return function (target: object, propertyKey: string, descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<void>>) {
         const originalFn = descriptor.value!;

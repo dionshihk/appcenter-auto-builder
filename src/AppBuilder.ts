@@ -2,16 +2,27 @@ import {APIService} from "./api/APIService";
 import Utility from "./util/Utility";
 import {RetryWhenError} from "./util/RetryWhenError";
 import {InitConfiguration} from "./type";
+import {APIClient} from "./api/APIClient";
 
 export class AppBuilder {
     constructor(private readonly config: InitConfiguration) {}
 
     async build() {
+        this.initNetworkSetting();
         await this.createProject();
         await this.connectRepo();
         await this.setBuildConfiguration();
         await this.triggerBuildAndWait();
         await this.disconnectRepo();
+    }
+
+    private initNetworkSetting() {
+        this.log("initializing network setting ...");
+
+        const {apiToken, owner} = this.config;
+        APIClient.init(apiToken, owner.name);
+
+        this.log(`network setting initialized with AppCenter owner: ${owner.name}`, true);
     }
 
     @RetryWhenError()
