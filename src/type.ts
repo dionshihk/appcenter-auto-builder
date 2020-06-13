@@ -17,7 +17,7 @@ export interface InitConfiguration {
         type: OwnerType;
         name: string;
     };
-    buildSetting: BuildConfiguration;
+    buildSetting: Omit<BuildConfiguration, "trigger">;
     /**
      * Default: false
      */
@@ -45,24 +45,13 @@ export type InnerEnvironmentVariableForDeploymentKeyItem = {type: "deployment-ke
 export type InnerEnvironmentVariableForAppSecret = {type: "app-secret"};
 
 export interface BuildConfiguration {
+    trigger: "continous" | "manual";
+    artifactVersioning: {buildNumberFormat: "buildId" | "timestamp"};
     environmentVariables: Array<{
         name: string;
         value: string;
         isSecret?: boolean;
     }>;
-    /**
-     * Attention:
-     * innerEnvironmentVariables is not part of AppBuildConfiguration API spec.
-     * It is helpful if you want to inject some project-specific values as part of environmentVariables.
-     *
-     * For example, if you specify `{innerEnvironmentVariables: [{MY_SECRET: "<appSecretKey>"}]}`,
-     * {MY_SECRET: "Your Real App Secret Key ..."} will be appended into environmentVariables, with isSecret = true.
-     */
-    innerEnvironmentVariables: Array<{
-        name: string;
-        value: InnerEnvironmentVariableForAppSecret | InnerEnvironmentVariableForDeploymentKeyItem;
-    }>;
-    artifactVersioning: {buildNumberFormat: "buildId" | "timestamp"};
     toolsets: {
         buildscripts?: {
             [key: string]: {
@@ -111,6 +100,18 @@ export interface BuildConfiguration {
             certificateEncoded?: string;
         };
     };
+    /**
+     * Attention:
+     * innerEnvironmentVariables is not part of AppBuildConfiguration API spec.
+     * It is helpful if you want to inject some project-specific values as part of environmentVariables.
+     *
+     * For example, if you specify `{innerEnvironmentVariables: [{MY_SECRET: "<appSecretKey>"}]}`,
+     * {MY_SECRET: "Your Real App Secret Key ..."} will be appended into environmentVariables, with isSecret = true.
+     */
+    innerEnvironmentVariables?: Array<{
+        name: string;
+        value: InnerEnvironmentVariableForAppSecret | InnerEnvironmentVariableForDeploymentKeyItem;
+    }>;
 }
 
 export interface InitializeProjectRequest {
