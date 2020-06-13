@@ -101,7 +101,7 @@ export class AppBuilder {
             delete buildSetting.innerEnvironmentVariables;
         }
 
-        await APIService.setBuildConfiguration(name, branch, {...buildSetting, trigger: "manual"});
+        await APIService.setBuildConfiguration(name, branch, buildSetting);
         this.log(`build configuration set`, true);
     }
 

@@ -17,7 +17,7 @@ export interface InitConfiguration {
         type: OwnerType;
         name: string;
     };
-    buildSetting: Omit<BuildConfiguration, "trigger">;
+    buildSetting: BuildConfiguration;
     /**
      * Default: false
      */
