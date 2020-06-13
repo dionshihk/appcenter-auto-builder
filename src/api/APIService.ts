@@ -3,90 +3,112 @@ import {
     InitializeProjectRequest,
     SetRepositoryConfigurationRequest,
     SetRepositoryConfigurationResponse,
-    AppBuildConfiguration,
+    BuildConfiguration,
     CreateDeploymentKeyResponse,
     GetRepositoryConfigurationRequest,
     TriggerBuildResponse,
     GetBuildStatusResponse,
     GetProjectResponse,
+    OwnerType,
+    GetUserResponse,
+    GetOrganizationResponse,
+    UpdateProjectRequest,
 } from "../type";
 
+/**
+ * Reference: https://openapi.appcenter.ms/
+ */
 export class APIService {
-    static async createProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {
-        const organizationName = APIClient.ownerName();
-        return APIClient.ajax("POST", "/v0.1/orgs/:organizationName/apps", {organizationName}, request);
+    static async getUser(): Promise<GetUserResponse> {
+        return APIClient.ajax("GET", "/v0.1/user", {});
     }
 
-    static async getAppSecret(appName: string): Promise<string> {
+    static async getOrganizations(): Promise<GetOrganizationResponse[]> {
+        return APIClient.ajax("GET", "/v0.1/orgs", {});
+    }
+
+    static async getProject(appName: string): Promise<GetProjectResponse> {
         const ownerName = APIClient.ownerName();
-        const {app_secret}: GetProjectResponse = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName", {appName, ownerName}, null);
-        return app_secret;
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName", {appName, ownerName});
     }
 
-    static async getRepositoryConfiguration(appName: string): Promise<GetRepositoryConfigurationRequest> {
+    static async updateProject(appName: string, request: UpdateProjectRequest): Promise<GetProjectResponse> {
         const ownerName = APIClient.ownerName();
-        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/repo_config", {ownerName, appName}, null);
+        return APIClient.ajax("PATCH", "/v0.1/apps/:ownerName/:appName", {appName, ownerName}, request);
     }
 
-    static async setRepositoryConfiguration(appName: string, request: SetRepositoryConfigurationRequest): Promise<SetRepositoryConfigurationResponse> {
+    static async createUserProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {
+        return APIClient.ajax("POST", "/v0.1/apps", {}, request);
+    }
+
+    static async createOrganizationProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {
         const ownerName = APIClient.ownerName();
-        return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/repo_config", {ownerName, appName}, request);
+        return APIClient.ajax("POST", "/v0.1/orgs/:ownerName/apps", {ownerName}, request);
     }
 
-    static async checkAppExist(appName: string): Promise<boolean> {
+    static async checkProjectExist(appName: string): Promise<boolean> {
         try {
-            const ownerName = APIClient.ownerName();
-            await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName", {ownerName, appName}, {});
+            await APIService.getProject(appName);
             return true;
         } catch (e) {
-            // Throw API 404 if the app not exist
+            // If not exist, API 404 error
             return false;
         }
     }
 
-    static async getBuildConfiguration(appName: string, branch: string): Promise<AppBuildConfiguration> {
+    static async getDeploymentKey(appName: string, deploymentName: string): Promise<string> {
         const ownerName = APIClient.ownerName();
-        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/branches/:branch/config", {ownerName, appName, branch}, null);
+        const deployments: CreateDeploymentKeyResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
+        const matchedDeployment = deployments.find(_ => _.name === deploymentName);
+        if (matchedDeployment) {
+            return matchedDeployment.key;
+        } else {
+            // Create a new one if not exist
+            const response: CreateDeploymentKeyResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
+            return response.key;
+        }
     }
 
-    static async setBuildConfiguration(appName: string, branch: string, request: AppBuildConfiguration): Promise<AppBuildConfiguration> {
+    static async getRepoConfiguration(appName: string): Promise<GetRepositoryConfigurationRequest> {
         const ownerName = APIClient.ownerName();
-        let config;
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/repo_config", {ownerName, appName});
+    }
+
+    static async setRepoConfiguration(appName: string, request: SetRepositoryConfigurationRequest): Promise<SetRepositoryConfigurationResponse> {
+        const ownerName = APIClient.ownerName();
+        // No PUT method provided, repeated call has no side effects
+        return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/repo_config", {ownerName, appName}, request);
+    }
+
+    static async getBuildConfiguration(appName: string, branch: string): Promise<BuildConfiguration> {
+        const ownerName = APIClient.ownerName();
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/branches/:branch/config", {ownerName, appName, branch});
+    }
+
+    static async setBuildConfiguration(appName: string, branch: string, request: BuildConfiguration): Promise<BuildConfiguration> {
+        const ownerName = APIClient.ownerName();
+        let config: BuildConfiguration | undefined;
         try {
             config = await APIService.getBuildConfiguration(appName, branch);
         } catch (e) {
-            console.info(`[${appName}] build configuration not found or unidentified error occurred, ignore and proceed`);
+            // If not exist, API 404 error
         }
 
-        // should call PUT instead if have config already
-        if (!config) {
-            return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/config", {ownerName, appName, branch}, request);
-        } else {
+        if (config) {
             return APIClient.ajax("PUT", "/v0.1/apps/:ownerName/:appName/branches/:branch/config", {ownerName, appName, branch}, {...config, ...request});
-        }
-    }
-
-    static async getDeploymentKey(appName: string): Promise<string> {
-        const ownerName = APIClient.ownerName();
-        const deployments: CreateDeploymentKeyResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, null);
-        if (deployments.length === 0) {
-            // all app use Staging deployment key
-            const response: CreateDeploymentKeyResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: "Staging"});
-            return response.key;
         } else {
-            return deployments[0].key;
+            return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/config", {ownerName, appName, branch}, request);
         }
     }
 
     static async checkBuildStatus(appName: string, buildId: number): Promise<GetBuildStatusResponse> {
         const ownerName = APIClient.ownerName();
-        const response: GetBuildStatusResponse = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/builds/:buildId", {appName, ownerName, buildId}, null);
-        return response;
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/builds/:buildId", {appName, ownerName, buildId});
     }
 
     static async triggerAppBuild(appName: string, branch: string): Promise<{buildId: number; buildURL: string}> {
         const ownerName = APIClient.ownerName();
-        const response: TriggerBuildResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch}, null);
+        const response: TriggerBuildResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch});
 
         return {
             buildId: response.id,
@@ -96,6 +118,6 @@ export class APIService {
 
     static async disconnectRepo(appName: string): Promise<void> {
         const ownerName = APIClient.ownerName();
-        await APIClient.ajax("DELETE", "/v0.1/apps/:ownerName/:appName/repo_config", {appName, ownerName}, null);
+        await APIClient.ajax("DELETE", "/v0.1/apps/:ownerName/:appName/repo_config", {appName, ownerName});
     }
 }

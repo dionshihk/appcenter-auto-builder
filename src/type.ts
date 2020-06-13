@@ -4,6 +4,7 @@ export interface InitConfiguration {
         name: string;
         os: ProjectOS;
         platform: ProjectPlatform;
+        description?: string;
     };
     repo: {
         url: string;
@@ -13,10 +14,10 @@ export interface InitConfiguration {
         branch?: string;
     };
     owner: {
-        type: "individual" | "organization";
+        type: OwnerType;
         name: string;
     };
-    buildSetting: AppBuildConfiguration;
+    buildSetting: BuildConfiguration;
     /**
      * Default: false
      */
@@ -37,35 +38,13 @@ export type ProjectOS = "iOS" | "Android";
 
 export type ProjectPlatform = "React-Native" | "Objective-C-Swift" | "Java" | "UWP" | "Cordova" | "Unity" | "Xamarin" | "Unknown";
 
-export interface InitializeProjectRequest {
-    display_name: string;
-    name: string;
-    os: ProjectOS;
-    platform: ProjectPlatform;
-}
+export type OwnerType = "individual" | "organization";
 
-export interface GetProjectResponse {
-    id: string;
-    app_secret: string;
-}
+export type InnerEnvironmentVariableForDeploymentKeyItem = {type: "deployment-key"; deploymentName: string};
 
-export interface GetRepositoryConfigurationRequest {
-    type: "github" | "bitbucket";
-    state: "unauthorized" | "inactive" | "active";
-    repo_url: string;
-    id: string;
-    user_email: string;
-}
+export type InnerEnvironmentVariableForAppSecret = {type: "app-secret"};
 
-export interface SetRepositoryConfigurationRequest {
-    repo_url: string;
-}
-
-export interface SetRepositoryConfigurationResponse {
-    message: string;
-}
-
-export interface AppBuildConfiguration {
+export interface BuildConfiguration {
     environmentVariables: Array<{
         name: string;
         value: string;
@@ -81,7 +60,7 @@ export interface AppBuildConfiguration {
      */
     innerEnvironmentVariables: Array<{
         name: string;
-        value: "<deploymentKey>" | "<appSecretKey>";
+        value: InnerEnvironmentVariableForAppSecret | InnerEnvironmentVariableForDeploymentKeyItem;
     }>;
     artifactVersioning: {buildNumberFormat: "buildId" | "timestamp"};
     toolsets: {
@@ -132,6 +111,54 @@ export interface AppBuildConfiguration {
             certificateEncoded?: string;
         };
     };
+}
+
+export interface InitializeProjectRequest {
+    display_name: string;
+    name: string;
+    os: ProjectOS;
+    platform: ProjectPlatform;
+    description?: string;
+}
+
+/**
+ * Not every field can be updated, after the project is created.
+ */
+export type UpdateProjectRequest = Pick<Partial<InitializeProjectRequest>, "name" | "display_name" | "description">;
+
+export interface GetProjectResponse {
+    id: string;
+    display_name: string;
+    app_secret: string;
+    // There are more fields here, but we do not need
+}
+
+export interface GetUserResponse {
+    id: string;
+    display_name: string;
+    name: string;
+    email: string;
+}
+
+export interface GetOrganizationResponse {
+    display_name: string;
+    name: string;
+}
+
+export interface GetRepositoryConfigurationRequest {
+    type: "github" | "bitbucket";
+    state: "unauthorized" | "inactive" | "active";
+    repo_url: string;
+    id: string;
+    user_email: string;
+}
+
+export interface SetRepositoryConfigurationRequest {
+    repo_url: string;
+}
+
+export interface SetRepositoryConfigurationResponse {
+    message: string;
 }
 
 export interface CreateDeploymentKeyResponse {

@@ -33,7 +33,7 @@ export class APIClient {
         return APIClient.appCenterOwnerName;
     }
 
-    static ajax<Request, Response>(method: Method, path: string, pathParams: object, request: Request): Promise<Response> {
+    static ajax<Request, Response>(method: Method, path: string, pathParams: object, request: Request | null = null): Promise<Response> {
         if (!APIClient.axiosClient) {
             throw new Error("APIClient.init() must be called before ajax()");
         }
@@ -42,10 +42,13 @@ export class APIClient {
             method,
             url: APIClient.urlParams(path, pathParams),
         };
-        if (method === "GET" || method === "DELETE") {
-            config.params = request;
-        } else if (method === "POST" || method === "PUT" || method === "PATCH") {
-            config.data = request;
+
+        if (request) {
+            if (method === "GET" || method === "DELETE") {
+                config.params = request;
+            } else if (method === "POST" || method === "PUT" || method === "PATCH") {
+                config.data = request;
+            }
         }
 
         return APIClient.axiosClient.request(config);

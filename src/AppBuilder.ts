@@ -1,14 +1,14 @@
 import {APIService} from "./api/APIService";
 import Utility from "./util/Utility";
 import {RetryWhenError} from "./util/RetryWhenError";
-import {InitConfiguration} from "./type";
+import {InitConfiguration, InitializeProjectRequest, InnerEnvironmentVariableForDeploymentKeyItem} from "./type";
 import {APIClient} from "./api/APIClient";
 
 export class AppBuilder {
     constructor(private readonly config: InitConfiguration) {}
 
     async build() {
-        this.initNetworkSetting();
+        await this.initNetworking();
         await this.createProject();
         await this.connectRepo();
         await this.setBuildConfiguration();
@@ -16,27 +16,50 @@ export class AppBuilder {
         await this.disconnectRepo();
     }
 
-    private initNetworkSetting() {
-        this.log("initializing network setting ...");
+    private async initNetworking() {
+        this.log(`initialization networking ...`);
 
         const {apiToken, owner} = this.config;
         APIClient.init(apiToken, owner.name);
 
-        this.log(`network setting initialized with AppCenter owner: ${owner.name}`, true);
+        if (owner.type === "individual") {
+            const {name} = await APIService.getUser();
+            if (name !== owner.name) {
+                throw new Error(`Specified individual name [${owner.name}] does not match AppCenter owner name [${name}]`);
+            }
+        } else {
+            const orgs = await APIService.getOrganizations();
+            if (orgs.every(_ => _.name !== owner.name)) {
+                throw new Error(`Specified organization name [${owner.name}] does not match any AppCenter organization names: \n${orgs.map(_ => _.name).join(" / ")}`);
+            }
+        }
+
+        this.log(`networking initialized with validated AppCenter owner: ${owner.name}`, true);
     }
 
     @RetryWhenError()
     private async createProject() {
         this.log("checking if project exists ...");
 
-        const {name, platform, os} = this.config.project;
-        const appExist = await APIService.checkAppExist(name);
+        const {
+            project: {name, platform, os, description},
+            owner,
+        } = this.config;
+        const projectExist = await APIService.checkProjectExist(name);
 
-        if (appExist) {
-            this.log("project exists, proceed", true);
+        if (projectExist) {
+            this.log("project exists, updating ...");
+            // We cannot update its name, because the name is the key to retrieval of existing projects
+            await APIService.updateProject(name, {description});
+            this.log(`project updated`, true);
         } else {
             this.log("project not exists, creating one ...");
-            await APIService.createProject({display_name: name, name, os, platform});
+            const request: InitializeProjectRequest = {display_name: name, name, os, platform, description};
+            if (owner.type === "individual") {
+                await APIService.createUserProject(request);
+            } else {
+                await APIService.createOrganizationProject(request);
+            }
             this.log(`project created`, true);
         }
     }
@@ -46,8 +69,8 @@ export class AppBuilder {
         const {name} = this.config.project;
         const {url} = this.config.repo;
 
-        this.log("connecting to repo");
-        await APIService.setRepositoryConfiguration(name, {repo_url: url});
+        this.log("connecting to repo ...");
+        await APIService.setRepoConfiguration(name, {repo_url: url});
         this.log("repo connected: " + url, true);
     }
 
@@ -60,16 +83,17 @@ export class AppBuilder {
         const {buildSetting} = this.config;
 
         if (buildSetting.innerEnvironmentVariables) {
-            const deploymentKeyItem = buildSetting.innerEnvironmentVariables.find(_ => _.value === "<deploymentKey>");
+            const deploymentKeyItem = buildSetting.innerEnvironmentVariables.find(_ => _.value.type === "deployment-key");
             if (deploymentKeyItem) {
-                const deploymentKey = await APIService.getDeploymentKey(name);
+                const value = deploymentKeyItem.value as InnerEnvironmentVariableForDeploymentKeyItem;
+                const deploymentKey = await APIService.getDeploymentKey(name, value.deploymentName);
                 this.log(`deployment key fetched, added into env variable as [${deploymentKeyItem.name}]`);
                 buildSetting.environmentVariables[deploymentKeyItem.name] = deploymentKey;
             }
 
-            const appSecretItem = buildSetting.innerEnvironmentVariables.find(_ => _.value === "<appSecretKey>");
+            const appSecretItem = buildSetting.innerEnvironmentVariables.find(_ => _.value.type === "app-secret");
             if (appSecretItem) {
-                const appSecret = await APIService.getAppSecret(name);
+                const appSecret = (await APIService.getProject(name)).app_secret;
                 this.log(`app secret fetched, added into env variable as [${appSecretItem.name}]`);
                 buildSetting.environmentVariables[appSecretItem.name] = appSecret;
             }

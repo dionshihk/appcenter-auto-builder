@@ -6,7 +6,7 @@ export async function startAppCenterBuild(config: InitConfiguration): Promise<vo
         const builder = new AppBuilder(config);
         await builder.build();
     } catch (e) {
-        console.error("AppBuilder terminated due to the following error:");
+        console.error("\nAppBuilder terminated due to the following error:");
         console.error(e);
         config.onError?.(e);
         process.exit(1);
