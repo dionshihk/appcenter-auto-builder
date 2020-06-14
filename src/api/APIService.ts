@@ -4,7 +4,7 @@ import {
     SetRepositoryConfigurationRequest,
     SetRepositoryConfigurationResponse,
     BuildConfiguration,
-    CreateDeploymentKeyResponse,
+    GetDeploymentResponse,
     GetRepositoryConfigurationRequest,
     TriggerBuildResponse,
     GetBuildStatusResponse,
@@ -99,14 +99,15 @@ export class APIService {
     }
 
     static async getDeploymentKey(appName: string, deploymentName: string): Promise<string> {
+        // TODO: split methods
         const ownerName = APIClient.ownerName();
-        const deployments: CreateDeploymentKeyResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
+        const deployments: GetDeploymentResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
         const matchedDeployment = deployments.find(_ => _.name === deploymentName);
         if (matchedDeployment) {
             return matchedDeployment.key;
         } else {
             // Create a new one if not exist
-            const response: CreateDeploymentKeyResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
+            const response: GetDeploymentResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
             return response.key;
         }
     }

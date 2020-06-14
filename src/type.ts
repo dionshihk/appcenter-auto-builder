@@ -167,10 +167,9 @@ export interface SetRepositoryConfigurationResponse {
     message: string;
 }
 
-export interface CreateDeploymentKeyResponse {
+export interface GetDeploymentResponse {
     name: string;
     key: string;
-    latest_release: Object | null;
 }
 
 export interface TriggerBuildResponse {
