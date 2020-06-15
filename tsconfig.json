@@ -4,6 +4,8 @@
         "module": "commonjs",
         "target": "es5",
         "moduleResolution": "node",
+        "sourceMap": true,
+        "inlineSources": true,
         "declaration": true,
         "strict": true,
         "allowSyntheticDefaultImports": true,
