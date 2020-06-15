@@ -17,7 +17,20 @@ export interface InitConfiguration {
         type: OwnerType;
         name: string;
     };
+    /**
+     * For details, please refer to:
+     * https://openapi.appcenter.ms/#/build/branchConfigurations_create
+     */
     buildSetting: BuildConfiguration;
+    /**
+     * It is helpful if you want to inject some project-specific values as part of environmentVariables.
+     * For example, if you specify `{extraBuildEnvironmentVariables: [{MY_SECRET: "<appSecretKey>"}]}`,
+     * {MY_SECRET: "Your Real App Secret Key ..."} will be appended into buildSetting.environmentVariables, with isSecret = true.
+     */
+    extraBuildEnvironmentVariables?: Array<{
+        name: string;
+        value: ExtraEnvironmentVariableForAppSecret | ExtraEnvironmentVariableForDeploymentKeyItem;
+    }>;
     /**
      * Default: false
      */
@@ -29,7 +42,8 @@ export interface InitConfiguration {
      */
     logLevel?: "none" | "verbose";
     /**
-     * Unit: second
+     * An estimated build duration (in second).
+     * After this duration, the script will poll the build completion status.
      * Default: 650 for iOS, 400 for Android
      */
     buildEstDuration?: number;
@@ -45,9 +59,25 @@ export type ProjectPlatform = "React-Native" | "Objective-C-Swift" | "Java" | "U
 
 export type OwnerType = "individual" | "organization";
 
-export type InnerEnvironmentVariableForDeploymentKeyItem = {type: "deployment-key"; deploymentName: string};
+export type ExtraEnvironmentVariableForDeploymentKeyItem = {type: "deployment-key"; deploymentName: string};
 
-export type InnerEnvironmentVariableForAppSecret = {type: "app-secret"};
+export type ExtraEnvironmentVariableForAppSecret = {type: "app-secret"};
+
+export interface XcodeSignatureHelperOptions {
+    provisioningProfilePath: string;
+    p12Path: string;
+    p12Password: string;
+}
+
+export interface XcodeSignatureConfiguration {
+    certificateFileId?: string;
+    certificateFilename?: string;
+    certificateEncoded?: string;
+    certificatePassword?: string;
+    provisioningProfileFileId?: string;
+    provisioningProfileFilename?: string;
+    provisioningProfileEncoded?: string;
+}
 
 export interface BuildConfiguration {
     trigger: "continuous" | "manual";
@@ -84,39 +114,39 @@ export interface BuildConfiguration {
             runTests?: boolean;
             runLint?: boolean;
             isRoot?: boolean;
+            keystorePassword?: string;
+            keyAlias?: string;
+            keyPassword?: string;
+            keystoreFilename?: string;
+            keystoreEncoded: string;
         };
         xcode?: {
-            certificatePassword?: string;
-            certificateFilename?: string;
-            provisioningProfileFilename?: string;
-            certificateFileId?: string;
-            provisioningProfileFileId?: string;
+            projectOrWorkspacePath: string;
+            scheme: string;
+            xcodeVersion: string;
+            podfilePath: string;
             appExtensionProvisioningProfileFiles?: Array<{
                 fileName: string;
                 fileId: string;
                 uploadId: string;
                 targetBundleIdentifier: string;
             }>;
-            projectOrWorkspacePath: string;
-            scheme: string;
-            xcodeVersion: string;
-            podfilePath: string;
-            provisioningProfileEncoded?: string;
-            certificateEncoded?: string;
+        } & XcodeSignatureConfiguration;
+        xamarin?: {
+            slnPath?: string;
+            isSimBuild?: boolean;
+            args?: string;
+            configuration?: string;
+            p12File?: string;
+            p12Pwd?: string;
+            provProfile?: string;
+            monoVersion?: string;
+            sdkBundle?: string;
+            symlink?: string;
         };
     };
-    /**
-     * Attention:
-     * innerEnvironmentVariables is not part of AppBuildConfiguration API spec.
-     * It is helpful if you want to inject some project-specific values as part of environmentVariables.
-     *
-     * For example, if you specify `{innerEnvironmentVariables: [{MY_SECRET: "<appSecretKey>"}]}`,
-     * {MY_SECRET: "Your Real App Secret Key ..."} will be appended into environmentVariables, with isSecret = true.
-     */
-    innerEnvironmentVariables?: Array<{
-        name: string;
-        value: InnerEnvironmentVariableForAppSecret | InnerEnvironmentVariableForDeploymentKeyItem;
-    }>;
+    testsEnabled?: boolean;
+    badgeIsEnabled?: boolean;
 }
 
 export interface InitializeProjectRequest {

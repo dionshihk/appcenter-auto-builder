@@ -1,5 +1,6 @@
 import {InitConfiguration} from "./type";
 import {AppBuilder} from "./AppBuilder";
+import Utility from "./util/Utility";
 
 export async function startAppCenterBuild(config: InitConfiguration): Promise<void> {
     try {
@@ -12,3 +13,5 @@ export async function startAppCenterBuild(config: InitConfiguration): Promise<vo
         process.exit(1);
     }
 }
+
+export const xcodeSignatureHelper = Utility.xcodeSignatureHelper;

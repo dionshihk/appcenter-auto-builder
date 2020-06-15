@@ -9,7 +9,6 @@ import {
     TriggerBuildResponse,
     GetBuildStatusResponse,
     GetProjectResponse,
-    OwnerType,
     GetUserResponse,
     GetOrganizationResponse,
     UpdateProjectRequest,
@@ -98,18 +97,14 @@ export class APIService {
         return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch});
     }
 
-    static async getDeploymentKey(appName: string, deploymentName: string): Promise<string> {
-        // TODO: split methods
+    static async getDeployments(appName: string): Promise<GetDeploymentResponse[]> {
         const ownerName = APIClient.ownerName();
-        const deployments: GetDeploymentResponse[] = await APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
-        const matchedDeployment = deployments.find(_ => _.name === deploymentName);
-        if (matchedDeployment) {
-            return matchedDeployment.key;
-        } else {
-            // Create a new one if not exist
-            const response: GetDeploymentResponse = await APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
-            return response.key;
-        }
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName});
+    }
+
+    static async createDeployment(appName: string, deploymentName: string): Promise<GetDeploymentResponse> {
+        const ownerName = APIClient.ownerName();
+        return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/deployments", {appName, ownerName}, {name: deploymentName});
     }
 
     static async disconnectRepo(appName: string): Promise<void> {

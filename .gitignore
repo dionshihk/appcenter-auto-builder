@@ -1,6 +1,7 @@
 node_modules/
 build/
-test/config.ts
+test/index.ts
+test/ios-cert
 /.idea
 *.iml
 .DS_Store

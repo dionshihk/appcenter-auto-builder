@@ -1,7 +1,7 @@
 import {APIService} from "./api/APIService";
 import Utility from "./util/Utility";
 import {RetryWhenError} from "./util/RetryWhenError";
-import {InitConfiguration, InitializeProjectRequest, InnerEnvironmentVariableForDeploymentKeyItem} from "./type";
+import {InitConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem} from "./type";
 import {APIClient} from "./api/APIClient";
 
 export class AppBuilder {
@@ -78,27 +78,38 @@ export class AppBuilder {
     private async setBuildConfiguration() {
         this.log("setting build configuration ...");
 
-        const {name} = this.config.project;
-        const {branch = "master"} = this.config.repo;
-        const {buildSetting} = this.config;
+        const {
+            project: {name},
+            repo: {branch = "master"},
+            buildSetting,
+            extraBuildEnvironmentVariables,
+        } = this.config;
 
-        if (buildSetting.innerEnvironmentVariables) {
-            const deploymentKeyItem = buildSetting.innerEnvironmentVariables.find(_ => _.value.type === "deployment-key");
+        if (extraBuildEnvironmentVariables) {
+            const deploymentKeyItem = extraBuildEnvironmentVariables.find(_ => _.value.type === "deployment-key");
             if (deploymentKeyItem) {
-                const value = deploymentKeyItem.value as InnerEnvironmentVariableForDeploymentKeyItem;
-                const deploymentKey = await APIService.getDeploymentKey(name, value.deploymentName);
-                this.log(`deployment key fetched, added into env variable as [${deploymentKeyItem.name}]`);
-                buildSetting.environmentVariables[deploymentKeyItem.name] = deploymentKey;
+                const value = deploymentKeyItem.value as ExtraEnvironmentVariableForDeploymentKeyItem;
+                const existingDeployments = await APIService.getDeployments(name);
+                const matchedDeployment = existingDeployments.find(_ => _.name === value.deploymentName);
+                const deploymentKey = matchedDeployment?.key || (await APIService.createDeployment(name, value.deploymentName)).key;
+                this.log(`deployment key fetched, injected into env variable as [${deploymentKeyItem.name}]`);
+                buildSetting.environmentVariables.push({
+                    name: deploymentKeyItem.name,
+                    value: deploymentKey,
+                    isSecret: true,
+                });
             }
 
-            const appSecretItem = buildSetting.innerEnvironmentVariables.find(_ => _.value.type === "app-secret");
+            const appSecretItem = extraBuildEnvironmentVariables.find(_ => _.value.type === "app-secret");
             if (appSecretItem) {
                 const appSecret = (await APIService.getProject(name)).app_secret;
-                this.log(`app secret fetched, added into env variable as [${appSecretItem.name}]`);
-                buildSetting.environmentVariables[appSecretItem.name] = appSecret;
+                this.log(`app secret fetched, injected into env variable as [${appSecretItem.name}]`);
+                buildSetting.environmentVariables.push({
+                    name: appSecretItem.name,
+                    value: appSecret,
+                    isSecret: true,
+                });
             }
-
-            delete buildSetting.innerEnvironmentVariables;
         }
 
         await APIService.setBuildConfiguration(name, branch, buildSetting);
@@ -113,8 +124,8 @@ export class AppBuilder {
             repo: {branch = "master"},
             buildEstDuration,
         } = this.config;
-        let buildSuccess = false;
 
+        let buildSuccess = false;
         const {id: buildId} = await APIService.triggerBuild(name, branch);
         const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${buildId}`;
         this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
