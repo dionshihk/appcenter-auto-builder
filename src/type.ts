@@ -32,6 +32,12 @@ export interface InitConfiguration {
         value: ExtraEnvironmentVariableForAppSecret | ExtraEnvironmentVariableForDeploymentKeyItem;
     }>;
     /**
+     * Generally, you should not disconnect repo for the project.
+     * It is good to use, if you are building white-label apps, which may exceed the limit of repo WebHooks (GitHub: 20, BitBucket: 50).
+     *
+     * If set to true, it will disconnect the repo after a success build, to release 1 repo WebHooks.
+     * We do not disconnect if the build fails, because disconnecting the repo will destroy all the build logs and settings, causing no error log found.
+     *
      * Default: false
      */
     disconnectRepoOnFinish?: boolean;
