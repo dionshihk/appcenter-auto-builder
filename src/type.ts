@@ -1,4 +1,4 @@
-export interface InitConfiguration {
+export interface AppCenterBuilderConfiguration {
     apiToken: string;
     project: {
         name: string;
@@ -44,12 +44,14 @@ export interface InitConfiguration {
     /**
      * If none, only error & warning will be printed to console.
      * If verbose, all information including every step execution will be printed to console.
+     *
      * Default: "verbose"
      */
     logLevel?: "none" | "verbose";
     /**
      * An estimated build duration (in second).
      * After this duration, the script will poll the build completion status.
+     *
      * Default: 650 for iOS, 400 for Android
      */
     buildEstDuration?: number;

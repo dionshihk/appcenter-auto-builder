@@ -1,11 +1,11 @@
 import {APIService} from "./api/APIService";
 import Utility from "./Utility";
 import {RetryWhenError} from "./RetryWhenError";
-import {InitConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem} from "./type";
+import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem} from "./type";
 import {APIClient} from "./api/APIClient";
 
 export class AppBuilder {
-    constructor(private readonly config: InitConfiguration) {}
+    constructor(private readonly config: AppCenterBuilderConfiguration) {}
 
     async build() {
         await this.initNetworking();

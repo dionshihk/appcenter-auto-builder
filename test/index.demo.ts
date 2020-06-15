@@ -1,9 +1,9 @@
-import {startAppCenterBuild} from "../src";
-import {InitConfiguration} from "../src/type";
+import {startAppCenterBuilder} from "../src";
+import {AppCenterBuilderConfiguration} from "../src/type";
 import Utility from "../src/Utility";
 import path from "path";
 
-const config: InitConfiguration = {
+const config: AppCenterBuilderConfiguration = {
     apiToken: "<Your API Token>",
     project: {
         name: "test-rn-ios",
@@ -54,4 +54,4 @@ const config: InitConfiguration = {
     buildEstDuration: 200,
 };
 
-startAppCenterBuild(config);
+startAppCenterBuilder(config);

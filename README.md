@@ -12,7 +12,7 @@ With Node environment, add this script to your dev dependencies.
 
 Or
    
-`npm install  appcenter-auto-builder --save-dev`
+`npm install appcenter-auto-builder --save-dev`
 
 ## Usage
 
@@ -20,7 +20,7 @@ You can refer to the example in `test/index.demo.ts`:
 
 https://github.com/dionshihk/appcenter-auto-builder/blob/master/test/index.demo.ts
 
-More about `InitConfiguration` interface can be found from `type.d.ts`, with proper comments.
+More about `AppCenterBuilderConfiguration` interface can be found from `type.d.ts`, with proper comments.
 
 ## Good To Know
 
@@ -33,4 +33,4 @@ This step cannot be done with pure script.
 The official API specification is not well-documented.
 GET `/v0.1/apps/{ownerName}/{appName}/repo_config` to find out the meaning of each field, in corresponding with `type.ts/BuildConfiguration` interface. 
 
-- Build the app once, to figure out a great number for `InitConfiguration.buildEstDuration`.
+- Build the app once, to figure out a great number for `AppCenterBuilderConfiguration.buildEstDuration`.

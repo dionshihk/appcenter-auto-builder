@@ -1,7 +1,7 @@
-import {InitConfiguration} from "./type";
+import {AppCenterBuilderConfiguration} from "./type";
 import {AppBuilder} from "./AppBuilder";
 
-export async function startAppCenterBuild(config: InitConfiguration): Promise<void> {
+export async function startAppCenterBuilder(config: AppCenterBuilderConfiguration): Promise<void> {
     try {
         const builder = new AppBuilder(config);
         await builder.build();
