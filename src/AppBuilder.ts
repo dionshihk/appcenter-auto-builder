@@ -117,7 +117,7 @@ export class AppBuilder {
     }
 
     private async triggerBuildAndWait() {
-        this.log("triggering build");
+        this.log("triggering build ...");
 
         const {
             project: {name, os},
@@ -157,10 +157,14 @@ export class AppBuilder {
 
     @RetryWhenError()
     private async disconnectRepo() {
-        if (this.config.disconnectRepoOnFinish) {
+        const {
+            project: {name},
+            disconnectRepoOnFinish,
+        } = this.config;
+        if (disconnectRepoOnFinish) {
             this.log("disconnecting repository ...");
-            await APIService.disconnectRepo(this.config.project.name);
-            this.log("disconnecting repository ...");
+            await APIService.disconnectRepo(name);
+            this.log("repository disconnected", true);
         }
     }
 

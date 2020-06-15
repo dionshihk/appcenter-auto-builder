@@ -216,7 +216,7 @@ export interface TriggerBuildResponse {
 }
 
 export interface GetBuildStatusResponse {
-    id: 0;
+    id: number;
     buildNumber: string;
     queueTime: Date;
     startTime: Date;
