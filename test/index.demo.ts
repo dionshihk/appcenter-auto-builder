@@ -1,5 +1,6 @@
-import {startAppCenterBuild, xcodeSignatureHelper} from "../src";
+import {startAppCenterBuild} from "../src";
 import {InitConfiguration} from "../src/type";
+import Utility from "../src/Utility";
 import path from "path";
 
 const config: InitConfiguration = {
@@ -40,7 +41,7 @@ const config: InitConfiguration = {
                 projectOrWorkspacePath: "ios/project.xcworkspace",
                 scheme: "project",
                 xcodeVersion: "11.2.1",
-                ...xcodeSignatureHelper({
+                ...Utility.xcodeSignatureHelper({
                     provisioningProfilePath: path.resolve(__dirname, "./ios-cert/app.mobileprovision"),
                     p12Path: path.resolve(__dirname, "./ios-cert/ios.p12"),
                     p12Password: "<Your Cert Password>",

@@ -118,7 +118,7 @@ export interface BuildConfiguration {
             keyAlias?: string;
             keyPassword?: string;
             keystoreFilename?: string;
-            keystoreEncoded: string;
+            keystoreEncoded?: string;
         };
         xcode?: {
             projectOrWorkspacePath: string;

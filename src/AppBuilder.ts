@@ -1,6 +1,6 @@
 import {APIService} from "./api/APIService";
-import Utility from "./util/Utility";
-import {RetryWhenError} from "./util/RetryWhenError";
+import Utility from "./Utility";
+import {RetryWhenError} from "./RetryWhenError";
 import {InitConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem} from "./type";
 import {APIClient} from "./api/APIClient";
 

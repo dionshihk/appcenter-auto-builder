@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import {XcodeSignatureConfiguration, XcodeSignatureHelperOptions} from "../type";
+import {XcodeSignatureConfiguration, XcodeSignatureHelperOptions} from "./type";
 import path from "path";
 
 export default class Utility {
-    static readFile(filePath: string, encoding?: BufferEncoding) {
+    static fileContent(filePath: string, encoding?: BufferEncoding) {
         return fs.readFileSync(filePath).toString(encoding);
     }
 
@@ -12,8 +12,8 @@ export default class Utility {
     }
 
     static xcodeSignatureHelper({provisioningProfilePath, p12Password, p12Path}: XcodeSignatureHelperOptions): XcodeSignatureConfiguration {
-        const provisioningProfileEncoded = Utility.readFile(provisioningProfilePath, "base64");
-        const certificateEncoded = Utility.readFile(p12Path, "base64");
+        const provisioningProfileEncoded = Utility.fileContent(provisioningProfilePath, "base64");
+        const certificateEncoded = Utility.fileContent(p12Path, "base64");
         return {
             provisioningProfileEncoded,
             certificateEncoded,
