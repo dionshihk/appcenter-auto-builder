@@ -6,6 +6,11 @@
     "types": "index.d.ts",
     "author": "Dion Shi",
     "license": "MIT",
+    "keywords": [
+        "appcenter",
+        "appcenter builder",
+        "mobile app builder"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/dionshihk/appcenter-auto-builder"
