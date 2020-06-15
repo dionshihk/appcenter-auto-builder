@@ -14,7 +14,8 @@
         "ts-node": "TS_NODE_PROJECT=./tsconfig.json ./node_modules/.bin/ts-node",
         "build": "node script/build.js",
         "format": "prettier --config ./prettier.config.js --write \"{src,script,test}/**/*.{ts,js,json}\"",
-        "test": "yarn ts-node ./test/index.ts"
+        "test": "yarn ts-node ./test/index.ts",
+        "test-api": "yarn ts-node ./test/api.ts"
     },
     "devDependencies": {
         "@types/node": "14.0.13",
