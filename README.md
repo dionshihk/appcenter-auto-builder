@@ -4,14 +4,14 @@ This project provides an all-in-one script for using Microsoft AppCenter: https:
 
 This script automates the whole flow to create project, connect repo, configure build settings, and generate mobile apps.
 
-## Requirement
-
-Node environment
-
 ## Installation
 
+With Node environment, add this script to your dev dependencies.
+
 `yarn add appcenter-auto-builder --dev` 
-Or   
+
+Or
+   
 `npm install  appcenter-auto-builder --save-dev`
 
 ## Usage
