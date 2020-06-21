@@ -16,11 +16,55 @@ Or
 
 ## Usage
 
-You can refer to the example in `test/index.demo.ts`:
+```
+import {startAppCenterBuilder} from "appcenter-auto-builder";
+import {AppCenterBuilderConfiguration} from "appcenter-auto-builder/type";
+
+const config: AppCenterBuilderConfiguration = {
+    apiToken: "<Your API Token>",
+    project: {
+        name: "test-rn-ios",
+        os: "iOS",
+        platform: "React-Native",
+        description: "My test app",
+    },
+    repo: {
+        url: "https://github.com/dionshihk/some-ios-project",
+    },
+    owner: {
+        type: "individual",
+        name: "<Your Account Name>",
+    },
+    buildSetting: {
+        trigger: "manual",
+        artifactVersioning: {buildNumberFormat: "buildId"},
+        environmentVariables: [
+            {name: "TEST_ENV_1", value: "1"},
+            {name: "TEST_ENV_2", value: Date.now().toString()},
+        ],
+        toolsets: {
+            javascript: {
+                packageJsonPath: "package.json",
+                nodeVersion: "12.x",
+            },
+            xcode: {
+                 ....
+            },
+        },
+    },
+    extraBuildEnvironmentVariables: [{name: "APP_SECRET", value: {type: "app-secret"}}],
+    disconnectRepoOnFinish: true,
+    buildEstDuration: 200,
+};
+
+startAppCenterBuilder(config);
+```
+
+A complete example can be found here:
 
 https://github.com/dionshihk/appcenter-auto-builder/blob/master/test/index.demo.ts
 
-More about `AppCenterBuilderConfiguration` interface can be found from `type.d.ts`, with proper comments.
+To learn more about `AppCenterBuilderConfiguration` interface, please read `type.d.ts`, with proper comments.
 
 ## Good To Know
 
