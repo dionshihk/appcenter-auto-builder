@@ -16,6 +16,8 @@ Or
 
 ## Usage
 
+An example written in TypeScript, run it with `yarn ts-node ./path/to/filename.ts`.
+
 ```
 import {startAppCenterBuilder} from "appcenter-auto-builder";
 import {AppCenterBuilderConfiguration} from "appcenter-auto-builder/type";
@@ -23,10 +25,9 @@ import {AppCenterBuilderConfiguration} from "appcenter-auto-builder/type";
 const config: AppCenterBuilderConfiguration = {
     apiToken: "<Your API Token>",
     project: {
-        name: "test-rn-ios",
+        name: "test-react-native-ios",
         os: "iOS",
         platform: "React-Native",
-        description: "My test app",
     },
     repo: {
         url: "https://github.com/dionshihk/some-ios-project",
@@ -52,9 +53,7 @@ const config: AppCenterBuilderConfiguration = {
             },
         },
     },
-    extraBuildEnvironmentVariables: [{name: "APP_SECRET", value: {type: "app-secret"}}],
     disconnectRepoOnFinish: true,
-    buildEstDuration: 200,
 };
 
 startAppCenterBuilder(config);
