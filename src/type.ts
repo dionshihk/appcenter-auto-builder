@@ -32,16 +32,6 @@ export interface AppCenterBuilderConfiguration {
         value: ExtraEnvironmentVariableForAppSecret | ExtraEnvironmentVariableForDeploymentKeyItem;
     }>;
     /**
-     * Generally, you should not disconnect repo for the project.
-     * It is good to use, if you are building white-label apps, which may exceed the limit of repo WebHooks (GitHub: 20, BitBucket: 50).
-     *
-     * If set to true, it will disconnect the repo after a success build, to release 1 repo WebHooks.
-     * We do not disconnect if the build fails, because disconnecting the repo will destroy all the build logs and settings, causing no error log found.
-     *
-     * Default: false
-     */
-    disconnectRepoOnFinish?: boolean;
-    /**
      * If none, only error & warning will be printed to console.
      * If verbose, all information including every step execution will be printed to console.
      *
@@ -55,10 +45,12 @@ export interface AppCenterBuilderConfiguration {
      * Default: 650 for iOS, 400 for Android
      */
     buildEstDuration?: number;
-    /**
-     * There is no mechanism to recover, all you can do here is to log the error, notify the developer, or etc.
-     */
-    onError?: (error: any) => void;
+}
+
+export interface AppCenterBuildContext {
+    buildId(): number;
+    disconnect(): Promise<void>;
+    downloadPath(type: BuildDownloadType): Promise<string>;
 }
 
 export type ProjectOS = "iOS" | "Android";
@@ -66,6 +58,8 @@ export type ProjectOS = "iOS" | "Android";
 export type ProjectPlatform = "React-Native" | "Objective-C-Swift" | "Java" | "UWP" | "Cordova" | "Unity" | "Xamarin" | "Unknown";
 
 export type OwnerType = "individual" | "organization";
+
+export type BuildDownloadType = "build" | "symbol" | "logs" | "mapping" | "bundle";
 
 export type ExtraEnvironmentVariableForDeploymentKeyItem = {type: "deployment-key"; deploymentName: string};
 
@@ -232,4 +226,8 @@ export interface GetBuildStatusResponse {
     lastChangedDate: Date;
     status: "notStarted" | "inProgress" | "completed";
     result?: "canceled" | "succeeded" | "failed";
+}
+
+export interface GetBuildDownloadResponse {
+    uri: string;
 }

@@ -3,8 +3,8 @@ import {APIClient} from "../src/api/APIClient";
 
 async function test() {
     try {
-        APIClient.init("<Your API Token>", "<Your Owner Name>");
-        const response = await APIService.getRepoConfiguration("dev-game-ios");
+        APIClient.init("<Your API Token>", "<Your Account Name>");
+        const response = await APIService.getBuildDownload("test-app-name", 1, "build");
         console.info(response);
     } catch (e) {
         console.error(e);

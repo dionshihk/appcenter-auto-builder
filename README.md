@@ -16,11 +16,14 @@ Or
 
 ## Usage
 
-An example written in TypeScript, run it with `yarn ts-node ./path/to/filename.ts`.
+With a proper `AppCenterBuilderConfiguration` config, you can run it with `AppCenterBuilder`.
+
+It returns a `Promise`, which resolves when the build succeeds, or rejects when errors occur.
+
+The resolved object is an `AppCenterBuildContext`, with which you can handle the bundle, disconnect the repo, etc.
 
 ```
-import {startAppCenterBuilder} from "appcenter-auto-builder";
-import {AppCenterBuilderConfiguration} from "appcenter-auto-builder/type";
+import {AppCenterBuilderConfiguration, AppCenterBuilder} from "appcenter-auto-builder";
 
 const config: AppCenterBuilderConfiguration = {
     apiToken: "<Your API Token>",
@@ -53,13 +56,12 @@ const config: AppCenterBuilderConfiguration = {
             },
         },
     },
-    disconnectRepoOnFinish: true,
 };
 
-startAppCenterBuilder(config);
+new AppCenterBuilder(config).build();
 ```
 
-A complete example can be found here:
+A complete TypeScript example (with async usage) can be found here:
 
 https://github.com/dionshihk/appcenter-auto-builder/blob/master/test/index.demo.ts
 

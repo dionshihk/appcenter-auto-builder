@@ -1,19 +1,25 @@
 import {APIService} from "./api/APIService";
-import Utility from "./Utility";
+import {AppCenterUtility} from "./AppCenterUtility";
 import {RetryWhenError} from "./RetryWhenError";
-import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem} from "./type";
+import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem, AppCenterBuildContext} from "./type";
 import {APIClient} from "./api/APIClient";
 
-export class AppBuilder {
+export class AppCenterBuilder {
     constructor(private readonly config: AppCenterBuilderConfiguration) {}
 
-    async build() {
+    async build(): Promise<AppCenterBuildContext> {
         await this.initNetworking();
         await this.createProject();
         await this.connectRepo();
         await this.setBuildConfiguration();
-        await this.triggerBuildAndWait();
-        await this.disconnectRepo();
+        const buildId = await this.triggerBuildAndWait();
+
+        const {name} = this.config.project;
+        return {
+            buildId: () => buildId,
+            disconnect: () => APIService.disconnectRepo(name),
+            downloadPath: async type => (await APIService.getBuildDownload(name, buildId, type)).uri,
+        };
     }
 
     private async initNetworking() {
@@ -116,7 +122,7 @@ export class AppBuilder {
         this.log(`build configuration set`, true);
     }
 
-    private async triggerBuildAndWait() {
+    private async triggerBuildAndWait(): Promise<number> {
         this.log("triggering build ...");
 
         const {
@@ -129,7 +135,7 @@ export class AppBuilder {
         const {id: buildId} = await APIService.triggerBuild(name, branch);
         const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${buildId}`;
         this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
-        await Utility.delay(buildEstDuration || (os === "iOS" ? 650 : 400));
+        await AppCenterUtility.delay(buildEstDuration || (os === "iOS" ? 650 : 400));
 
         while (true) {
             try {
@@ -141,31 +147,19 @@ export class AppBuilder {
                     }
                     break;
                 } else {
-                    await Utility.delay(20);
+                    await AppCenterUtility.delay(20);
                 }
             } catch (e) {
                 console.warn("[pollingBuildStatus] failed, retry in 10 seconds, error:");
                 console.warn(e);
-                await Utility.delay(10);
+                await AppCenterUtility.delay(10);
             }
         }
 
         if (!buildSuccess) {
             throw new Error("AppCenter Build not success, please visit AppCenter for details");
         }
-    }
-
-    @RetryWhenError()
-    private async disconnectRepo() {
-        const {
-            project: {name},
-            disconnectRepoOnFinish,
-        } = this.config;
-        if (disconnectRepoOnFinish) {
-            this.log("disconnecting repository ...");
-            await APIService.disconnectRepo(name);
-            this.log("repository disconnected", true);
-        }
+        return buildId;
     }
 
     private log(content: string, extraLineBreak: boolean = false) {

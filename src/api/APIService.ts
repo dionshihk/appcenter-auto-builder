@@ -12,6 +12,8 @@ import {
     GetUserResponse,
     GetOrganizationResponse,
     UpdateProjectRequest,
+    GetBuildDownloadResponse,
+    BuildDownloadType,
 } from "../type";
 
 /**
@@ -95,6 +97,11 @@ export class APIService {
     static async triggerBuild(appName: string, branch: string): Promise<TriggerBuildResponse> {
         const ownerName = APIClient.ownerName();
         return APIClient.ajax("POST", "/v0.1/apps/:ownerName/:appName/branches/:branch/builds", {appName, ownerName, branch});
+    }
+
+    static async getBuildDownload(appName: string, buildId: number, downloadType: BuildDownloadType): Promise<GetBuildDownloadResponse> {
+        const ownerName = APIClient.ownerName();
+        return APIClient.ajax("GET", "/v0.1/apps/:ownerName/:appName/builds/:buildId/downloads/:downloadType", {appName, ownerName, buildId, downloadType});
     }
 
     static async getDeployments(appName: string): Promise<GetDeploymentResponse[]> {
