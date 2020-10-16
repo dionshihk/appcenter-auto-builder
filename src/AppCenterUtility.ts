@@ -1,5 +1,7 @@
 import fs from "fs-extra";
+import axios, {AxiosResponse} from "axios";
 import path from "path";
+import {Stream} from "stream";
 import https from "https";
 import unzipper from "unzipper";
 import {XcodeSignatureConfiguration, XcodeSignatureHelperOptions} from "./type";
@@ -25,11 +27,34 @@ export class AppCenterUtility {
         };
     }
 
+    static readableFileSize(size: number): string {
+        const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+        let i = 0;
+        while (size >= 1024) {
+            size /= 1024;
+            i++;
+        }
+        return size.toFixed(2) + " " + units[i];
+    }
+
+    static async downloadChunkedFile(uri: string, path: string): Promise<void> {
+        return new Promise<void>(resolve => {
+            https.get(uri, response => {
+                const writer = fs.createWriteStream(path);
+                response.on("data", chunk => writer.write(chunk));
+                response.on("end", () => {
+                    writer.close();
+                    resolve();
+                });
+            });
+        });
+    }
+
     /**
      * @param uri: should be GetBuildDownloadResponse.uri, which is a zip archive including the bundle
      * @param targetPath: should end with extension ".ipa" or ".apk"
      */
-    static extractBuildZip(uri: string, targetPath: string): Promise<void> {
+    static async extractBuildZip(uri: string, targetPath: string): Promise<void> {
         // Throws if cannot locate the bundle file
         const retrieveBundlePath = (unzippedFolder: string): string => {
             const ext = path.extname(targetPath); // ".ipa" or ".apk"
@@ -51,39 +76,32 @@ export class AppCenterUtility {
         };
         const log = (text: string) => console.info(`[Extract Build Zip] ${text}`);
 
-        log(`Downloading from ${uri} ...`);
-        return new Promise<void>((resolve, reject) => {
-            https
-                .get(uri, response => {
-                    if (response.statusCode === 200) {
-                        const targetFolder = path.dirname(targetPath) + "/";
-                        const tmpUnzippedFolder = fs.mkdtempSync(targetFolder);
-                        log(`Response received, unzip at ${tmpUnzippedFolder} ...`);
+        const targetFolder = path.dirname(targetPath) + "/";
+        const tmpUnzippedFolder = fs.mkdtempSync(targetFolder);
 
-                        response.pipe(unzipper.Extract({path: tmpUnzippedFolder})).on("close", () => {
-                            try {
-                                const bundleFilePath = retrieveBundlePath(tmpUnzippedFolder);
-                                log(`Bundle file located: ${bundleFilePath}`);
+        try {
+            log(`Downloading from: ${uri}`);
+            const tmpDownloadPath = tmpUnzippedFolder + "/download.zip";
+            await AppCenterUtility.downloadChunkedFile(uri, tmpDownloadPath);
+            log(`File size: ${AppCenterUtility.readableFileSize(fs.statSync(tmpDownloadPath).size)}`);
+            log(`Downloaded to: ${tmpDownloadPath}`);
 
-                                if (fs.existsSync(targetPath)) {
-                                    log(`Target file ${targetPath} exists, removing ...`);
-                                    fs.removeSync(targetPath);
-                                }
+            log(`Extracting to: ${tmpUnzippedFolder}`);
+            const zip = await unzipper.Open.file(tmpDownloadPath);
+            await zip.extract({path: tmpUnzippedFolder});
 
-                                log(`Moving bundle to ${targetPath} ...`);
-                                fs.moveSync(bundleFilePath, targetPath);
-                            } catch (e) {
-                                log(`Failed to locate bundle path`);
-                                reject(e);
-                            } finally {
-                                fs.removeSync(tmpUnzippedFolder);
-                            }
-                        });
-                    } else {
-                        reject("Response Status Not OK: " + response.statusCode);
-                    }
-                })
-                .on("error", reject);
-        });
+            const bundleFilePath = retrieveBundlePath(tmpUnzippedFolder);
+            log(`Bundle file located: ${bundleFilePath}`);
+
+            if (fs.existsSync(targetPath)) {
+                fs.removeSync(targetPath);
+                log(`Target file ${targetPath} exists already, removed`);
+            }
+
+            log(`Moving bundle to: ${targetPath}`);
+            fs.moveSync(bundleFilePath, targetPath);
+        } finally {
+            fs.removeSync(tmpUnzippedFolder);
+        }
     }
 }
