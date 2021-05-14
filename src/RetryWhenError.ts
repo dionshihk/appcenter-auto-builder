@@ -1,20 +1,21 @@
 import {AppCenterUtility} from "./AppCenterUtility";
 
-export function RetryWhenError(maxRetryTimes: number = 2, interval: number = 3) {
+const RETRY_INTERVAL = 10; // In second
+
+export function RetryWhenError(maxRetryTimes: number = 3) {
     let retryTimes = 0;
-    return function (target: object, propertyKey: string, descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<void>>) {
+    return function (target: object, propertyKey: string, descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<any>>) {
         const originalFn = descriptor.value!;
 
         descriptor.value = async function (...args) {
             while (true) {
                 try {
-                    await originalFn.apply(this, args);
-                    break;
+                    return await originalFn.apply(this, args);
                 } catch (e) {
-                    console.warn(`[${propertyKey}] failed, retry in ${interval} seconds, error:`);
+                    console.warn(`[${propertyKey}] failed, retry in ${RETRY_INTERVAL} seconds, error:`);
                     console.warn(e);
                     if (retryTimes < maxRetryTimes) {
-                        await AppCenterUtility.delay(interval);
+                        await AppCenterUtility.delay(RETRY_INTERVAL);
                         retryTimes++;
                     } else {
                         throw e;

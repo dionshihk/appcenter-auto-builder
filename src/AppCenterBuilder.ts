@@ -1,7 +1,7 @@
 import {APIService} from "./api/APIService";
 import {AppCenterUtility} from "./AppCenterUtility";
 import {RetryWhenError} from "./RetryWhenError";
-import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem, AppCenterBuildContext} from "./type";
+import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem, AppCenterBuildContext, BuildDownloadType} from "./type";
 import {APIClient} from "./api/APIClient";
 
 export class AppCenterBuilder {
@@ -14,15 +14,14 @@ export class AppCenterBuilder {
         await this.setBuildConfiguration();
         const buildId = await this.triggerBuildAndWait();
 
-        const {name} = this.config.project;
         return {
             buildId: () => buildId,
-            disconnect: () => APIService.disconnectRepo(name),
-            downloadPath: async type => (await APIService.getBuildDownload(name, buildId, type)).uri,
+            disconnect: () => this.disconnectRepo(),
+            downloadPath: type => this.getDownloadPath(buildId, type),
         };
     }
 
-    private async initNetworking() {
+    private async initNetworking(): Promise<void> {
         this.log(`initialization networking ...`);
 
         const {apiToken, owner} = this.config;
@@ -44,7 +43,7 @@ export class AppCenterBuilder {
     }
 
     @RetryWhenError()
-    private async createProject() {
+    private async createProject(): Promise<void> {
         this.log("checking if project exists ...");
 
         const {
@@ -71,7 +70,7 @@ export class AppCenterBuilder {
     }
 
     @RetryWhenError()
-    private async connectRepo() {
+    private async connectRepo(): Promise<void> {
         const {name} = this.config.project;
         const {url} = this.config.repo;
 
@@ -81,7 +80,7 @@ export class AppCenterBuilder {
     }
 
     @RetryWhenError()
-    private async setBuildConfiguration() {
+    private async setBuildConfiguration(): Promise<void> {
         this.log("setting build configuration ...");
 
         const {
@@ -162,7 +161,20 @@ export class AppCenterBuilder {
         return buildId;
     }
 
-    private log(content: string, extraLineBreak: boolean = false) {
+    @RetryWhenError()
+    private async disconnectRepo(): Promise<void> {
+        const {name} = this.config.project;
+        await APIService.disconnectRepo(name);
+    }
+
+    @RetryWhenError()
+    private async getDownloadPath(buildId: number, type: BuildDownloadType): Promise<string> {
+        const {name} = this.config.project;
+        const {uri} = await APIService.getBuildDownload(name, buildId, type);
+        return uri;
+    }
+
+    private log(content: string, extraLineBreak: boolean = false): void {
         const {project, logLevel} = this.config;
         if (logLevel !== "none") {
             console.info(`[${project.name}] [${new Date().toLocaleString()}] ${content}`);

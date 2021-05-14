@@ -1,7 +1,5 @@
 import fs from "fs-extra";
-import axios, {AxiosResponse} from "axios";
 import path from "path";
-import {Stream} from "stream";
 import https from "https";
 import unzipper from "unzipper";
 import {XcodeSignatureConfiguration, XcodeSignatureHelperOptions} from "./type";
