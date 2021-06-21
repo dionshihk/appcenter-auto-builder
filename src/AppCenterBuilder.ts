@@ -136,7 +136,7 @@ export class AppCenterBuilder {
 
         const {id} = await APIService.triggerBuild(name, branch);
         const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${id}`;
-        this.log(`build #${id} triggered, check status at: ${buildURL}`);
+        this.log(`build #${id} triggered, check status at: ${buildURL}`, true);
 
         return id;
     }
@@ -161,7 +161,7 @@ export class AppCenterBuilder {
                     await AppCenterUtility.delay(20);
                 }
             } catch (e) {
-                console.warn("[pollingBuildStatus] failed, retry in 10 seconds, error:");
+                console.warn(`[${name}] checkBuildStatus failed, retry in 10 seconds, error:`);
                 console.warn(e);
                 await AppCenterUtility.delay(10);
                 errorTimes++;
