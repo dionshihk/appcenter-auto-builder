@@ -1,4 +1,4 @@
-import {AppCenterUtility} from "./AppCenterUtility";
+import {AppCenterUtility} from "../AppCenterUtility";
 
 const RETRY_INTERVAL = 10; // In second
 

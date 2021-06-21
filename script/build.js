@@ -47,7 +47,7 @@ function build() {
     distribute();
 
     console.info(chalk`{yellow.bold Build Successfully}`);
-    console.info(chalk`{yellow.bold You can publish to npm via:} npm publish build/dist`);
+    console.info(chalk`{yellow.bold You can publish to npm via:} npm publish build/dist/`);
 }
 
 build();

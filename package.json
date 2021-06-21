@@ -1,6 +1,6 @@
 {
     "name": "appcenter-auto-builder",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -9,6 +9,8 @@
     "keywords": [
         "appcenter",
         "appcenter builder",
+        "ios app builder",
+        "android app builder",
         "mobile app builder",
         "react native builder"
     ],
@@ -30,11 +32,11 @@
     },
     "devDependencies": {
         "@types/fs-extra": "9.0.11",
-        "@types/node": "15.0.3",
+        "@types/node": "15.12.4",
         "@types/unzipper": "0.10.3",
         "chalk": "4.1.1",
-        "prettier": "2.3.0",
-        "ts-node": "9.1.1",
-        "typescript": "4.2.4"
+        "prettier": "2.3.1",
+        "ts-node": "10.0.0",
+        "typescript": "4.3.4"
     }
 }

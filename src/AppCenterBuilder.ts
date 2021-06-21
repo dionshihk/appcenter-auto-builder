@@ -1,6 +1,7 @@
 import {APIService} from "./api/APIService";
 import {AppCenterUtility} from "./AppCenterUtility";
-import {RetryWhenError} from "./RetryWhenError";
+import {RetryWhenError} from "./decorator/RetryWhenError";
+import {IgnoreError} from "./decorator/IgnoreError";
 import {AppCenterBuilderConfiguration, InitializeProjectRequest, ExtraEnvironmentVariableForDeploymentKeyItem, AppCenterBuildContext, BuildDownloadType} from "./type";
 import {APIClient} from "./api/APIClient";
 
@@ -12,7 +13,10 @@ export class AppCenterBuilder {
         await this.createProject();
         await this.connectRepo();
         await this.setBuildConfiguration();
-        const buildId = await this.triggerBuildAndWait();
+
+        const buildId = await this.triggerBuild();
+        await AppCenterUtility.delay(this.config.buildEstDuration || (this.config.project.os === "iOS" ? 650 : 400));
+        await this.checkBuildStatus(buildId);
 
         return {
             buildId: () => buildId,
@@ -21,8 +25,9 @@ export class AppCenterBuilder {
         };
     }
 
+    @RetryWhenError()
     private async initNetworking(): Promise<void> {
-        this.log(`initialization networking ...`);
+        this.log(`initialize networking ...`);
 
         const {apiToken, owner} = this.config;
         APIClient.init(apiToken, owner.name);
@@ -121,25 +126,32 @@ export class AppCenterBuilder {
         this.log(`build configuration set`, true);
     }
 
-    private async triggerBuildAndWait(): Promise<number> {
+    @RetryWhenError()
+    private async triggerBuild(): Promise<number> {
         this.log("triggering build ...");
-
         const {
-            project: {name, os},
+            project: {name},
             repo: {branch = "master"},
-            buildEstDuration,
         } = this.config;
 
-        let buildSuccess = false;
-        const {id: buildId} = await APIService.triggerBuild(name, branch);
-        const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${buildId}`;
-        this.log(`build #${buildId} triggered, check status at: ${buildURL}`);
-        await AppCenterUtility.delay(buildEstDuration || (os === "iOS" ? 650 : 400));
+        const {id} = await APIService.triggerBuild(name, branch);
+        const buildURL = `https://appcenter.ms/users/${APIClient.ownerName()}/apps/${name}/build/branches/${branch}/builds/${id}`;
+        this.log(`build #${id} triggered, check status at: ${buildURL}`);
 
+        return id;
+    }
+
+    private async checkBuildStatus(buildId: number): Promise<void> {
+        const {
+            project: {name},
+        } = this.config;
+
+        let errorTimes = 0;
+        let buildSuccess = false;
         while (true) {
             try {
                 const response = await APIService.getBuildStatus(name, buildId);
-                this.log(`build status polled, status: ${response.status}, result: ${response.result || "<N/A>"}`);
+                this.log(`build status checked, status: ${response.status}, result: ${response.result || "<N/A>"}`);
                 if (response.status === "completed") {
                     if (response.result === "succeeded") {
                         buildSuccess = true;
@@ -152,16 +164,21 @@ export class AppCenterBuilder {
                 console.warn("[pollingBuildStatus] failed, retry in 10 seconds, error:");
                 console.warn(e);
                 await AppCenterUtility.delay(10);
+                errorTimes++;
+
+                if (errorTimes >= 30) {
+                    // Believe it is time to break the loop
+                    break;
+                }
             }
         }
 
         if (!buildSuccess) {
             throw new Error("AppCenter Build not success, please visit AppCenter for details");
         }
-        return buildId;
     }
 
-    @RetryWhenError()
+    @IgnoreError("Please disconnect repo manually after build completes")
     private async disconnectRepo(): Promise<void> {
         const {name} = this.config.project;
         await APIService.disconnectRepo(name);
