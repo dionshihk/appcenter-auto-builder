@@ -161,7 +161,7 @@ export class AppCenterBuilder {
                     await AppCenterUtility.delay(20);
                 }
             } catch (e) {
-                console.warn(`[${name}] checkBuildStatus failed, retry in 10 seconds, error:`);
+                this.log("failed to check build status, retry in 10 seconds:");
                 console.warn(e);
                 await AppCenterUtility.delay(10);
                 errorTimes++;
