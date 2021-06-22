@@ -9,13 +9,21 @@ export class AppCenterBuilder {
     constructor(private readonly config: AppCenterBuilderConfiguration) {}
 
     async build(): Promise<AppCenterBuildContext> {
+        const {
+            apiToken,
+            owner,
+            buildEstDuration,
+            project: {os},
+        } = this.config;
+
+        APIClient.init(apiToken, owner.name);
         await this.initNetworking();
         await this.createProject();
         await this.connectRepo();
         await this.setBuildConfiguration();
 
         const buildId = await this.triggerBuild();
-        await AppCenterUtility.delay(this.config.buildEstDuration || (this.config.project.os === "iOS" ? 650 : 400));
+        await AppCenterUtility.delay(buildEstDuration || (os === "iOS" ? 650 : 400));
         await this.checkBuildStatus(buildId);
 
         return {
@@ -29,8 +37,7 @@ export class AppCenterBuilder {
     private async initNetworking(): Promise<void> {
         this.log(`initialize networking ...`);
 
-        const {apiToken, owner} = this.config;
-        APIClient.init(apiToken, owner.name);
+        const {owner} = this.config;
 
         if (owner.type === "individual") {
             const {name} = await APIService.getUser();
