@@ -26,16 +26,16 @@
         "test-api": "yarn run-script ./test/api.ts"
     },
     "dependencies": {
-        "axios": "0.23.0",
+        "axios": "0.24.0",
         "fs-extra": "10.0.0",
         "unzipper": "0.10.11"
     },
     "devDependencies": {
         "@types/fs-extra": "9.0.13",
-        "@types/node": "16.11.1",
+        "@types/node": "16.11.7",
         "@types/unzipper": "0.10.4",
         "prettier": "2.4.1",
-        "ts-node": "10.3.0",
+        "ts-node": "10.4.0",
         "typescript": "4.4.4"
     }
 }
