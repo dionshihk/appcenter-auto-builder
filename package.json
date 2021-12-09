@@ -1,6 +1,6 @@
 {
     "name": "appcenter-auto-builder",
-    "version": "1.1.8",
+    "version": "1.2.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -21,9 +21,7 @@
     "scripts": {
         "run-script": "TS_NODE_PROJECT=./tsconfig.json ./node_modules/.bin/ts-node",
         "build": "node script/build.js",
-        "format": "prettier --config ./prettier.config.js --write \"{src,script,test}/**/*.{ts,js,json}\"",
-        "test": "yarn run-script ./test/index.ts",
-        "test-api": "yarn run-script ./test/api.ts"
+        "format": "prettier --config ./prettier.config.js --write \"{src,script,test}/**/*.{ts,js,json}\""
     },
     "dependencies": {
         "axios": "0.24.0",

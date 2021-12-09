@@ -6,7 +6,7 @@ const config: AppCenterCleanerConfiguration = {
         type: "individual",
         name: "<Your Account Name>",
     },
-    projectFilter: appCenterProjects => ["my-unwanted-project"],
+    projectFilter: () => ["my-unwanted-project"],
 };
 
 async function start() {

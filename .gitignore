@@ -1,6 +1,6 @@
 node_modules/
 build/
-test/api.ts
+test/local
 test/index.ts
 test/ios-cert
 test/build-download

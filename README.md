@@ -61,10 +61,6 @@ const config: AppCenterBuilderConfiguration = {
 new AppCenterBuilder(config).build();
 ```
 
-A complete TypeScript example (with async usage) can be found here:
-
-https://github.com/dionshihk/appcenter-auto-builder/blob/master/test/index.demo.ts
-
 To learn more about `AppCenterBuilderConfiguration` interface, please read `type.d.ts`, with proper comments.
 
 ## Usage - **AppCenterCleaner**
@@ -87,6 +83,11 @@ const config: AppCenterCleanerConfiguration = {
 
 new AppCenterCleaner(config).clean();
 ```
+
+## Demo Code
+
+Complete TypeScript examples (with async usage) can be found here:
+https://github.com/dionshihk/appcenter-auto-builder/blob/master/test/
 
 ## Good To Know
 

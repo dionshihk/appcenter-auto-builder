@@ -3,6 +3,7 @@ import path from "path";
 import https from "https";
 import unzipper from "unzipper";
 import {XcodeSignatureConfiguration, XcodeSignatureHelperOptions} from "./type";
+import readline from "readline";
 
 export class AppCenterUtility {
     static fileContent(filePath: string, encoding?: BufferEncoding): string {
@@ -11,6 +12,27 @@ export class AppCenterUtility {
 
     static delay(second: number): Promise<void> {
         return new Promise<void>(resolve => setTimeout(resolve, second * 1000));
+    }
+
+    static async confirm(question: string): Promise<boolean> {
+        const rl = readline.createInterface({input: process.stdin, output: process.stdout});
+        const completeQuestion = question + "\nInput Yes(Y)/No(N): ";
+        const promisifiedAnswer = () => new Promise<string>(resolve => rl.question(completeQuestion, resolve));
+
+        do {
+            const answer = (await promisifiedAnswer()).trim().toLowerCase();
+            const truthy = ["yes", "y"];
+            const falsy = ["no", "n"];
+
+            // If not close, the stdin will be held for next input, and program will not exit
+            if (truthy.includes(answer)) {
+                rl.close();
+                return true;
+            } else if (falsy.includes(answer)) {
+                rl.close();
+                return false;
+            }
+        } while (true);
     }
 
     static xcodeSignatureHelper({provisioningProfilePath, p12Password, p12Path}: XcodeSignatureHelperOptions): XcodeSignatureConfiguration {

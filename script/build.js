@@ -44,7 +44,7 @@ function build() {
     compile();
     distribute();
 
-    console.info("Build done, you can publish to npm via `npm publish build/dist/`");
+    console.info("Build done, you can publish to npm via `npm publish ./build/dist/`");
 }
 
 build();
