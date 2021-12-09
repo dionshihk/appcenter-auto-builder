@@ -49,7 +49,7 @@ export class APIService {
 
     static async getOrganizationProjects(): Promise<GetProjectsResponse[]> {
         const ownerName = APIClient.ownerName();
-        return APIClient.ajax("GET", "/v0.1/:ownerName/apps", {ownerName});
+        return APIClient.ajax("GET", "/v0.1/orgs/:ownerName/apps", {ownerName});
     }
 
     static async createOrganizationProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {

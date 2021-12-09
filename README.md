@@ -69,36 +69,23 @@ To learn more about `AppCenterBuilderConfiguration` interface, please read `type
 
 ## Usage - **AppCenterCleaner**
 
-With a proper `AppCenterCleanerIncludeModeConfiguration` or `AppCenterCleanerExcludeModeConfiguration` config, you can run it with `AppCenterCleaner`.
+With a proper `AppCenterCleanerConfiguration` config, you can run it with `AppCenterCleaner`.
+
+There will be a Cli prompt for confirmation of deletion, type `yes` to proceed, `no` to exit.
 
 ```typescript
-import {AppCenterCleaner, AppCenterCleanerIncludeModeConfiguration, AppCenterCleanerExcludeModeConfiguration} from "appcenter-auto-builder";
+import {AppCenterCleaner, AppCenterCleanerConfiguration} from "appcenter-auto-builder";
 
-const includeModeConfig: AppCenterCleanerIncludeModeConfiguration = {
+const config: AppCenterCleanerConfiguration = {
     apiToken: "<Your API Token>",
     owner: {
         type: "individual",
         name: "<Your Account Name>",
     },
-    dryMode: false,
-    include: appCenterProjects => ["my-unwanted-project"],
+    projectFilter: appCenterProjects => ["my-unwanted-project"],
 };
 
-new AppCenterCleaner(includeModeConfig).clean();
-
-// or
-
-const excludeModeConfig: AppCenterCleanerExcludeModeConfiguration = {
-    apiToken: "<Your API Token>",
-    owner: {
-        type: "individual",
-        name: "<Your Account Name>",
-    },
-    dryMode: false,
-    exclude: appCenterProjects => ["my-favorite-project"],
-};
-
-new AppCenterCleaner(excludeModeConfig).clean();
+new AppCenterCleaner(config).clean();
 ```
 
 ## Good To Know

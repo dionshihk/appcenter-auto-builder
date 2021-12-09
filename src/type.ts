@@ -50,28 +50,15 @@ export interface AppCenterBuildContext {
     downloadPath(type: BuildDownloadType): Promise<string>;
 }
 
-export interface AppCenterCleanerConfigurationBase {
+export interface AppCenterCleanerConfiguration {
     apiToken: string;
     owner: Owner;
-    /**
-     * The program will only log the removing projects in dry mode.
-     */
-    dryMode: boolean;
+    projectFilter: ProjectFilter;
 }
 
 /**
- * Included projects will be deleted
- */
-export type AppCenterCleanerIncludeModeConfiguration = AppCenterCleanerConfigurationBase & {include: ProjectFilter};
-
-/**
- * Excluded projects will not be deleted
- */
-export type AppCenterCleanerExcludeModeConfiguration = AppCenterCleanerConfigurationBase & {exclude: ProjectFilter};
-
-/**
  * @param {string[]} appCenterProjects project names fetched from AppCenter
- * @returns {string[]} project names to be included or excluded
+ * @returns {string[]} project names to be removed
  */
 export type ProjectFilter = (appCenterProjects: string[]) => string[];
 
