@@ -14,6 +14,7 @@ import {
     UpdateProjectRequest,
     GetBuildDownloadResponse,
     BuildDownloadType,
+    GetProjectsResponse,
 } from "../type";
 
 /**
@@ -38,8 +39,17 @@ export class APIService {
         return APIClient.ajax("PATCH", "/v0.1/apps/:ownerName/:appName", {appName, ownerName}, request);
     }
 
+    static async getUserProjects(): Promise<GetProjectsResponse[]> {
+        return APIClient.ajax("GET", "/v0.1/apps", {});
+    }
+
     static async createUserProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {
         return APIClient.ajax("POST", "/v0.1/apps", {}, request);
+    }
+
+    static async getOrganizationProjects(): Promise<GetProjectsResponse[]> {
+        const ownerName = APIClient.ownerName();
+        return APIClient.ajax("GET", "/v0.1/orgs/:ownerName/apps", {ownerName});
     }
 
     static async createOrganizationProject(request: InitializeProjectRequest): Promise<GetProjectResponse> {
@@ -117,5 +127,10 @@ export class APIService {
     static async disconnectRepo(appName: string): Promise<void> {
         const ownerName = APIClient.ownerName();
         await APIClient.ajax("DELETE", "/v0.1/apps/:ownerName/:appName/repo_config", {appName, ownerName});
+    }
+
+    static async deleteProject(appName: string): Promise<void> {
+        const ownerName = APIClient.ownerName();
+        await APIClient.ajax("DELETE", "/v0.1/apps/:ownerName/:appName", {ownerName, appName});
     }
 }

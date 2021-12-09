@@ -6,7 +6,7 @@ export class APIClient {
 
     static init(apiToken: string, ownerName: string): void {
         if (APIClient.axiosClient) {
-            throw new Error("APIClient.init() has been called");
+            return;
         }
 
         const client = axios.create({
