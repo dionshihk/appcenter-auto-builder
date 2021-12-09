@@ -13,10 +13,7 @@ export interface AppCenterBuilderConfiguration {
          */
         branch?: string;
     };
-    owner: {
-        type: OwnerType;
-        name: string;
-    };
+    owner: Owner;
     /**
      * For details, please refer to:
      * https://openapi.appcenter.ms/#/build/branchConfigurations_create
@@ -53,9 +50,39 @@ export interface AppCenterBuildContext {
     downloadPath(type: BuildDownloadType): Promise<string>;
 }
 
+export interface AppCenterCleanerConfigurationBase {
+    apiToken: string;
+    owner: Owner;
+    /**
+     * The program will only log the removing projects in dry mode.
+     */
+    dryMode: boolean;
+}
+
+/**
+ * Included projects will be deleted
+ */
+export type AppCenterCleanerIncludeModeConfiguration = AppCenterCleanerConfigurationBase & {include: ProjectFilter};
+
+/**
+ * Excluded projects will not be deleted
+ */
+export type AppCenterCleanerExcludeModeConfiguration = AppCenterCleanerConfigurationBase & {exclude: ProjectFilter};
+
+/**
+ * @param {string[]} appCenterProjects project names fetched from AppCenter
+ * @returns {string[]} project names to be included or excluded
+ */
+export type ProjectFilter = (appCenterProjects: string[]) => string[];
+
 export type ProjectOS = "iOS" | "Android";
 
 export type ProjectPlatform = "React-Native" | "Objective-C-Swift" | "Java" | "UWP" | "Cordova" | "Unity" | "Xamarin" | "Unknown";
+
+export type Owner = {
+    type: OwnerType;
+    name: string;
+};
 
 export type OwnerType = "individual" | "organization";
 
@@ -230,4 +257,37 @@ export interface GetBuildStatusResponse {
 
 export interface GetBuildDownloadResponse {
     uri: string;
+}
+
+export interface GetProjectsResponse {
+    id: string;
+    description: string;
+    display_name: string;
+    release_type: string;
+    icon_url: string;
+    icon_source: string;
+    name: string;
+    os: ProjectOS;
+    owner: {
+        id: string;
+        avatar_url: string;
+        display_name: string;
+        email: string;
+        name: string;
+        type: string;
+    };
+    app_secret: string;
+    azure_subscription: {
+        subscription_id: string;
+        tenant_id: string;
+        subscription_name: string;
+        is_billing: boolean;
+        is_billable: boolean;
+        is_microsoft_internal: boolean;
+    };
+    platform: ProjectPlatform;
+    origin: string;
+    created_at: string;
+    updated_at: string;
+    member_permissions: string[];
 }
