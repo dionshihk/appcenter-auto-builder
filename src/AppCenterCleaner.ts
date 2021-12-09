@@ -66,12 +66,12 @@ export class AppCenterCleaner {
         if ("include" in this.config) {
             this.log(`filtering project in include mode...`);
             const {include} = this.config;
-            const projectsToKeep = include(this.appCenterProjects);
-            this.projectsToRemove = this.appCenterProjects.filter(_ => !projectsToKeep.includes(_));
+            this.projectsToRemove = include(this.appCenterProjects);
         } else {
             this.log(`filtering project in exclude mode...`);
             const {exclude} = this.config;
-            this.projectsToRemove = exclude(this.appCenterProjects);
+            const projectsToKeep = exclude(this.appCenterProjects);
+            this.projectsToRemove = this.appCenterProjects.filter(_ => !projectsToKeep.includes(_));
         }
 
         this.log(`found ${this.projectsToRemove.length} projects need to be deleted`, true);
