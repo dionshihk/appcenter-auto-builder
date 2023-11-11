@@ -24,7 +24,7 @@
         "format": "prettier --config ./prettier.config.js --write \"{src,script,test}/**/*.{ts,js,json}\""
     },
     "dependencies": {
-        "axios": "0.27.2",
+        "axios": "1.6.0",
         "fs-extra": "10.1.0",
         "unzipper": "0.10.11"
     },
