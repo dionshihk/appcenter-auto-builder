@@ -17,7 +17,8 @@ export class APIClient {
             (response: AxiosResponse) => response.data,
             (error: AxiosError<{message?: string}>) => {
                 throw new Error(
-                    `fail to call ${error.config.url} (${error.config.method?.toUpperCase() || "Unknown Method"}), response code [${error.response?.status}], message [${error.response?.data.message}]`
+                    `fail to call ${error.config?.url || "<unknown URL>"} (${error.config?.method?.toUpperCase() || "<unknown method>"}), response code [${error.response?.status}], message [${error
+                        .response?.data.message}]`
                 );
             }
         );

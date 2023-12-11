@@ -15,7 +15,6 @@
         "lib": ["es2017"],
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
-        "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true
     },
     "include": ["./src", "./test"]
