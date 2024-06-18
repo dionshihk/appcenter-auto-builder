@@ -8,11 +8,11 @@ This script automates the whole flow to create project, connect repo, configure 
 
 With Node environment, add this script to your dev dependencies.
 
+`npm install appcenter-auto-builder --save-dev`
+
 `yarn add appcenter-auto-builder --dev`
 
-Or
-
-`npm install appcenter-auto-builder --save-dev`
+`pnpm add appcenter-auto-builder -D`
 
 ## Usage - **AppCenterBuilder**
 
