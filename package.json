@@ -16,7 +16,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/dionshihk/appcenter-auto-builder"
+        "url": "https://github.com/dionshihk/appcenter-auto-builder.git"
     },
     "scripts": {
         "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json}\"",

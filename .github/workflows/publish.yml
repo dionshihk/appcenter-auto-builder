@@ -3,7 +3,7 @@ on:
     push:
         tags: v*
 jobs:
-    build:
+    publish:
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -21,4 +21,4 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
             - run: pnpm install
             - run: pnpm build
-            - run: npm publish --access public
+            - run: npm publish --provenance --access public
