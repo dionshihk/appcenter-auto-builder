@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-        "outDir": "./build/out",
+        "rootDir": "src",
+        "outDir": "lib",
         "module": "commonjs",
         "target": "es5",
         "moduleResolution": "node",
@@ -17,5 +18,5 @@
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true
     },
-    "include": ["./src", "./test"]
+    "include": ["./src"]
 }
