@@ -25,7 +25,7 @@
         "build:fast": "rm -rf ./lib && tsc --composite false"
     },
     "dependencies": {
-        "axios": "1.12.2",
+        "axios": "1.13.5",
         "fs-extra": "11.3.2",
         "unzipper": "0.12.3"
     },
