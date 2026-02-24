@@ -25,20 +25,20 @@
         "build:fast": "rm -rf ./lib && tsc --composite false"
     },
     "dependencies": {
-        "axios": "1.12.2",
-        "fs-extra": "11.3.2",
+        "axios": "1.13.5",
+        "fs-extra": "11.3.3",
         "unzipper": "0.12.3"
     },
     "devDependencies": {
         "@types/fs-extra": "11.0.4",
-        "@types/node": "24.8.0",
+        "@types/node": "25.3.0",
         "@types/unzipper": "0.10.11",
-        "prettier": "3.6.2",
+        "prettier": "3.8.1",
         "ts-node": "10.9.2",
         "typescript": "5.9.3"
     },
     "engines": {
         "node": ">=24"
     },
-    "packageManager": "pnpm@10.18.3"
+    "packageManager": "pnpm@10.30.2"
 }
